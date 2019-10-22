@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "node",
+    "target": "es2018",
+    "lib": [
+      "esnext",
+      "dom",
+      "dom.iterable"
+    ],
+    "typeRoots": [
+      "node_modules/@types",
+      "types"
+    ],
+    "strict": true,
+    "preserveConstEnums": true,
+    "esModuleInterop": true,
+    "downlevelIteration": true,
+    "jsx": "preserve",
+    "sourceMap": true
+  },
+  "include": ["./**/*"]
+}
