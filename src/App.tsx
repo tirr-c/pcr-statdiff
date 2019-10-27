@@ -70,10 +70,14 @@ function calculateFinalStat(
 
 const AppContainer = styled.div`
     display: flex;
+    flex-wrap: wrap;
 `;
-const styles = css`
-    .statContainer {
-        width: 500px;
+
+const StatContainer = styled.div`
+    width: 500px;
+
+    @media (max-width: 516px) {
+        width: 250px;
     }
 `;
 
@@ -117,8 +121,19 @@ export default function App() {
 
     return (
         <AppContainer>
-            <Unit unit={data.unit} rarity={rarity} rank={rank} enhanceLevels={enhanceLevels} equipmentFlags={equipmentFlags} onEquipmentChange={handleEquipmentChange} />
-            <Stats className={styles.statContainer} stat={calculateFinalStat(data.unit, rank, level, equipmentFlags, enhanceLevels)} />
+            <Unit
+                unit={data.unit}
+                rarity={rarity}
+                rank={rank}
+                enhanceLevels={enhanceLevels}
+                equipmentFlags={equipmentFlags}
+                onEquipmentChange={handleEquipmentChange}
+            />
+            <StatContainer>
+                <Stats
+                    stat={calculateFinalStat(data.unit, rank, level, equipmentFlags, enhanceLevels)}
+                />
+            </StatContainer>
         </AppContainer>
     );
 }

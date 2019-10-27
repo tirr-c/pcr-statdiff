@@ -16,6 +16,7 @@ const buildEquipmentUrl = (id: number, flag: boolean) => {
 
 const UnitContainer = styled.div`
     width: 500px;
+    margin-bottom: 12px;
 `;
 
 const UnitData = styled.div`
@@ -39,6 +40,10 @@ const Equipments = styled.ul`
     grid-template-columns: repeat(2, 1fr);
     grid-gap: 8px;
     grid-auto-rows: min-content;
+
+    @media (max-width: 516px) {
+        grid-template-columns: 1fr;
+    }
 `;
 
 const Equipment = styled.li`
