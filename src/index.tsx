@@ -2,13 +2,18 @@ import { css } from 'astroturf';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-const styles = css`
-    .centered {
-        text-align: center;
-    }
-`;
+import { ApolloProvider } from '@apollo/react-hooks';
+import ApolloClient from 'apollo-boost';
+
+import App from './App';
+
+const apolloClient = new ApolloClient({
+    uri: GQL_ENDPOINT,
+});
 
 ReactDOM.render(
-  <div className={styles.centered}>Hello, world!</div>,
-  document.getElementById('app'),
+    <ApolloProvider client={apolloClient}>
+        <App />
+    </ApolloProvider>,
+    document.getElementById('app'),
 );

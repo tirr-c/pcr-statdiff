@@ -1,0 +1,47 @@
+fragment Stat on Stat {
+  hp
+  atk
+  magicStr
+  def
+  magicDef
+  physicalCritical
+  magicCritical
+  waveHpRecovery
+  waveEnergyRecovery
+  dodge
+  lifeSteal
+  hpRecoveryRate
+  energyRecoveryRate
+  energyReduceRate
+  accuracy
+}
+
+query CharacterStat($name: String!, $rarity: Int!, $rank: Int!) {
+  unit: characterUnit(name: $name) {
+    id
+    name
+    stat(rarity: $rarity) {
+      base {
+        ...Stat
+      }
+      growthRate {
+        ...Stat
+      }
+    }
+    statByRank(rank: $rank) {
+      ...Stat
+    }
+    equipments(rank: $rank) {
+      id
+      name
+      promotionLevel
+      requiredLevel
+      stat {
+        ...Stat
+      }
+      growthRate: statRate {
+        ...Stat
+      }
+    }
+  }
+}

@@ -55,12 +55,19 @@ export default function configure(env = 'dev'): webpack.Configuration {
                         'postcss-loader',
                     ],
                 },
+                {
+                    test: /\.gql$/,
+                    use: 'graphql-tag/loader',
+                },
             ],
         },
         resolve: {
             extensions: ['.tsx', '.ts', '.jsx', '.js'],
         },
         plugins: [
+            new webpack.DefinePlugin({
+                GQL_ENDPOINT: JSON.stringify(process.env.GQL_ENDPOINT || '//localhost:8000/graphql'),
+            }),
             new CleanWebpackPlugin(),
             new HtmlWebpackPlugin({
                 template: path.resolve(__dirname, 'src/index.html'),
