@@ -14,7 +14,9 @@ jobs:
       with:
         node-version: 12.x
     - name: yarn build
-      run: yarn build prod
+      run: |
+        yarn install --frozen-lockfile
+        yarn build prod
       env:
         GQL_ENDPOINT: https://ames.tirr.dev/graphql
     - name: aws s3 sync
