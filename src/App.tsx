@@ -4,10 +4,11 @@ import React from 'react';
 import { useQuery } from '@apollo/react-hooks';
 import { gql } from 'apollo-boost';
 
-import { PromotionLevel, Stat } from './common-types';
+import { CharacterUnit, PromotionLevel, Stat } from './common-types';
 import CharacterStatQuery from './queries/CharacterStat.gql';
 
 import Stats from './Stats';
+import Unit from './Unit';
 
 interface CharacterStatVariables {
     name: string;
@@ -16,34 +17,8 @@ interface CharacterStatVariables {
 }
 
 type CharacterStatResult = {
-    unit: {
-        id: number;
-        name: string;
-        stat: {
-            base: Stat;
-            growthRate: Stat;
-        };
-        statByRank: Stat;
-        equipments: {
-            id: number;
-            name: string;
-            promotionLevel: PromotionLevel;
-            requiredLevel: number;
-            stat: Stat;
-            growthRate: Stat;
-        }[];
-    };
+    unit: CharacterUnit;
 };
-
-function getMaxEnhance(promotionLevel: PromotionLevel) {
-    switch (promotionLevel) {
-        case PromotionLevel.Blue: return 0;
-        case PromotionLevel.Bronze: return 1;
-        case PromotionLevel.Silver: return 3;
-        case PromotionLevel.Gold:
-        case PromotionLevel.Purple: return 5;
-    }
-}
 
 function statCombineLinear(statCoeffPair: [Stat, number][]) {
     const result: Stat = {
@@ -71,65 +46,31 @@ function statCombineLinear(statCoeffPair: [Stat, number][]) {
     return result;
 }
 
-function calculateFinalStat(unit: CharacterStatResult['unit'], rank: number, level: number, equipmentEnhanceLevels: [number, number, number, number, number, number]): Stat {
+function calculateFinalStat(
+    unit: CharacterUnit,
+    rank: number,
+    level: number,
+    equipmentFlags: boolean[],
+    equipmentEnhanceLevels: number[],
+): Stat {
+    const equipmentBaseStats = unit.equipments
+        .map((equipment): [Stat, number] => [equipment.stat, 1])
+        .filter((_, idx) => equipmentFlags[idx]);
+    const equipmentGrowthStats = unit.equipments
+        .map((equipment, idx): [Stat, number] => [equipment.growthRate, equipmentEnhanceLevels[idx]])
+        .filter((_, idx) => equipmentFlags[idx]);
     return statCombineLinear([
         [unit.stat.base, 1],
         [unit.stat.growthRate, level + rank],
         [unit.statByRank, 1],
-        ...unit.equipments.map((equipment): [Stat, number] => [equipment.stat, 1]),
-        ...unit.equipments.map((equipment, idx): [Stat, number] => [equipment.growthRate, equipmentEnhanceLevels[idx]]),
+        ...equipmentBaseStats,
+        ...equipmentGrowthStats,
     ]);
 }
-
-const buildUnitUrl = (id: number, rarity: number) => {
-    const realId = id + (rarity >= 3 ? 30 : 10);
-    return new URL(`/icons/unit/${realId}.png`, 'https://ames-static.tirr.dev').toString();
-};
-const buildEquipmentUrl = (id: number) => new URL(`/icons/equipment/${id}.png`, 'https://ames-static.tirr.dev').toString();
 
 const AppContainer = styled.div`
     display: flex;
 `;
-const UnitContainer = styled.div`
-    width: 500px;
-`;
-
-const Unit = styled.div`
-    display: flex;
-    margin-bottom: 12px;
-    > img {
-        width: 96px;
-        height: 96px;
-    }
-`;
-const UnitDetail = styled.div`
-    margin-left: 8px;
-`;
-
-const Equipments = styled.ul`
-    margin: 0;
-    padding: 0;
-
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-gap: 8px;
-    grid-auto-rows: min-content;
-`;
-const Equipment = styled.li`
-    display: flex;
-    align-items: center;
-    list-style: none;
-
-    > img {
-        width: 64px;
-        height: 64px;
-    }
-`;
-const EquipmentName = styled.div`
-    margin-left: 8px;
-    font-size: 0.9em;
-`;
-
 const styles = css`
     .statContainer {
         width: 500px;
@@ -141,6 +82,27 @@ export default function App() {
     const [rarity, setRarity] = React.useState(3);
     const [rank, setRank] = React.useState(10);
     const [level, setLevel] = React.useState(107);
+    const [equipmentFlags, setEquipmentFlags] = React.useState([false, true, true, true, true, true]);
+    const [enhanceLevels, setEnhanceLevels] = React.useState([0, 0, 0, 0, 0, 0]);
+
+    const handleEquipmentChange = React.useCallback((index: number, flag: boolean, enhanceLevel: number) => {
+        setEquipmentFlags(equipmentFlags => {
+            if (equipmentFlags[index] === flag) {
+                return equipmentFlags;
+            }
+            const result = [...equipmentFlags];
+            result[index] = flag;
+            return result;
+        });
+        setEnhanceLevels(enhanceLevels => {
+            if (enhanceLevels[index] === enhanceLevel) {
+                return enhanceLevels;
+            }
+            const result = [...enhanceLevels];
+            result[index] = enhanceLevel;
+            return result;
+        });
+    }, []);
 
     const { loading, error, data } = useQuery<CharacterStatResult, CharacterStatVariables>(
         CharacterStatQuery,
@@ -155,24 +117,8 @@ export default function App() {
 
     return (
         <AppContainer>
-            <UnitContainer>
-                <Unit>
-                    <img src={buildUnitUrl(data.unit.id, rarity)} />
-                    <UnitDetail>
-                        <div>{data.unit.name} ★{rarity}</div>
-                        <div>RANK {rank}</div>
-                    </UnitDetail>
-                </Unit>
-                <Equipments>
-                    {data.unit.equipments.map((equipment, idx) => (
-                        <Equipment key={idx}>
-                            <img src={buildEquipmentUrl(equipment.id)} />
-                            <EquipmentName>{equipment.name}</EquipmentName>
-                        </Equipment>
-                    ))}
-                </Equipments>
-            </UnitContainer>
-            <Stats className={styles.statContainer} stat={calculateFinalStat(data.unit, rank, level, [0, 0, 0, 0, 0, 0])} />
+            <Unit unit={data.unit} rarity={rarity} rank={rank} enhanceLevels={enhanceLevels} equipmentFlags={equipmentFlags} onEquipmentChange={handleEquipmentChange} />
+            <Stats className={styles.statContainer} stat={calculateFinalStat(data.unit, rank, level, equipmentFlags, enhanceLevels)} />
         </AppContainer>
     );
 }

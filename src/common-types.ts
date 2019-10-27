@@ -23,3 +23,23 @@ export enum PromotionLevel {
     Gold = 'GOLD',
     Purple = 'PURPLE',
 }
+
+export interface Equipment {
+    id: number;
+    name: string;
+    promotionLevel: PromotionLevel;
+    requiredLevel: number;
+    stat: Stat;
+    growthRate: Stat;
+}
+
+export interface CharacterUnit {
+    id: number;
+    name: string;
+    stat: {
+        base: Stat;
+        growthRate: Stat;
+    };
+    statByRank: Stat;
+    equipments: Equipment[];
+}
