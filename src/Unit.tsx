@@ -7,11 +7,11 @@ import Stars from './Stars';
 
 const buildUnitUrl = (id: number, rarity: number) => {
     const realId = id + (rarity >= 3 ? 30 : 10);
-    return new URL(`/icons/unit/${realId}.png`, 'https://ames-static.tirr.dev').toString();
+    return new URL(`/icons/unit/${realId}.png`, STATIC_BASE_URL).toString();
 };
 const buildEquipmentUrl = (id: number, flag: boolean) => {
     const path = flag ? `/icons/equipment/${id}.png` : `/icons/equipment/invalid/${id}.png`;
-    return new URL(path, 'https://ames-static.tirr.dev').toString();
+    return new URL(path, STATIC_BASE_URL).toString();
 };
 
 const UnitContainer = styled.div`

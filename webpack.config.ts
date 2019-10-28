@@ -67,6 +67,7 @@ export default function configure(env = 'dev'): webpack.Configuration {
         plugins: [
             new webpack.DefinePlugin({
                 GQL_ENDPOINT: JSON.stringify(process.env.GQL_ENDPOINT || '//localhost:8000/graphql'),
+                STATIC_BASE_URL: JSON.stringify(process.env.STATIC_BASE_URL || 'https://ames-static.tirr.dev/'),
             }),
             new CleanWebpackPlugin(),
             new HtmlWebpackPlugin({
