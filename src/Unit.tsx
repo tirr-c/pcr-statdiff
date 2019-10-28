@@ -109,22 +109,42 @@ function EquipmentView(props: EquipmentViewProps) {
 
 interface Props {
     unit: CharacterUnit;
+    draft?: boolean;
     rarity: number;
-    rank: number;
+    rarityDraft: number;
+    rankDraft: string;
+    levelDraft: string;
     equipmentFlags: boolean[];
     enhanceLevels: number[];
+    onRarityDraftChange?(rarity: number): void;
+    onRankDraftChange?(rank: string): void;
+    onLevelDraftChange?(level: string): void;
+    onApplyClick?(): void;
     onEquipmentChange?(index: number, flag: boolean, enhanceLevel: number): void;
 }
 
 export default function Unit(props: Props) {
-    const { unit, rarity, rank, equipmentFlags, enhanceLevels, onEquipmentChange } = props;
+    const { unit, draft, rarity, rarityDraft, rankDraft, levelDraft, equipmentFlags, enhanceLevels } = props;
+    const { onRankDraftChange, onLevelDraftChange } = props;
+
+    const handleRankChange = React.useCallback(e => {
+        onRankDraftChange && onRankDraftChange(e.target.value);
+    }, [onRankDraftChange]);
+
+    const handleLevelChange = React.useCallback(e => {
+        onLevelDraftChange && onLevelDraftChange(e.target.value);
+    }, [onLevelDraftChange]);
+
     return (
         <UnitContainer>
             <UnitData>
                 <img src={buildUnitUrl(unit.id, rarity)} />
                 <UnitDetail>
-                    <div>{unit.name} ★{rarity}</div>
-                    <div>RANK {rank}</div>
+                    <div>{unit.name}</div>
+                    <Stars value={rarityDraft} max={5} onChange={props.onRarityDraftChange} />
+                    <div>RANK <input type="number" min={1} value={rankDraft} onChange={handleRankChange} /></div>
+                    <div>레벨 <input type="number" min={1} value={levelDraft} onChange={handleLevelChange} /></div>
+                    <button disabled={!draft} onClick={props.onApplyClick}>적용</button>
                 </UnitDetail>
             </UnitData>
             <Equipments>
@@ -135,7 +155,7 @@ export default function Unit(props: Props) {
                         index={idx}
                         flag={equipmentFlags[idx]}
                         enhanceLevel={enhanceLevels[idx]}
-                        onEquipmentChange={onEquipmentChange}
+                        onEquipmentChange={props.onEquipmentChange}
                     />
                 ))}
             </Equipments>

@@ -42,7 +42,7 @@ export function calculateFinalStat(
     return statCombineLinear([
         [unit.stat.base, 1],
         [unit.stat.growthRate, level + rank],
-        [unit.statByRank, 1],
+        ...(unit.statByRank == null ? [] : [[unit.statByRank, 1]]) as [Stat, number][],
         ...equipmentBaseStats,
         ...equipmentGrowthStats,
     ]);

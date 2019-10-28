@@ -97,14 +97,22 @@ export default function UnitStatItem(props: Props) {
         return null;
     }
 
+    const isDraft = rarity !== rarityDraft || String(rank) !== rankDraft || String(level) !== levelDraft;
     return (
         <UnitStatItemContainer>
             <Unit
                 unit={data.unit}
+                draft={isDraft}
                 rarity={rarity}
-                rank={rank}
+                rarityDraft={rarityDraft}
+                rankDraft={rankDraft}
+                levelDraft={levelDraft}
                 enhanceLevels={enhanceLevels}
                 equipmentFlags={equipmentFlags}
+                onRarityDraftChange={setRarityDraft}
+                onRankDraftChange={setRankDraft}
+                onLevelDraftChange={setLevelDraft}
+                onApplyClick={handleRequery}
                 onEquipmentChange={handleEquipmentChange}
             />
             <StatContainer>
