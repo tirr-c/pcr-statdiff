@@ -33,6 +33,12 @@ export interface Equipment {
     growthRate: Stat;
 }
 
+export interface BasicCharacterInfo {
+    id: number;
+    name: string;
+    rarity: number;
+}
+
 export interface CharacterUnit {
     id: number;
     name: string;

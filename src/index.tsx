@@ -2,9 +2,9 @@ import styled from 'astroturf';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { ApolloProvider } from '@apollo/react-hooks';
 import ApolloClient from 'apollo-boost';
 
+import { State } from './state';
 import App from './App';
 
 const apolloClient = new ApolloClient({
@@ -22,13 +22,13 @@ const Copyright = styled.footer`
 `;
 
 ReactDOM.render(
-    <ApolloProvider client={apolloClient}>
+    <>
         <h1>프리코네R 캐릭터 스탯</h1>
-        <App />
+        <App state={new State(apolloClient)} />
         <Copyright>
             <code>{new URL(GQL_ENDPOINT).host}</code>, <code>{new URL(STATIC_BASE_URL).host}</code>에서 제공되는
             데이터의 저작권은 {ORIGINAL_ASSET_COPYRIGHT}에 있습니다.
         </Copyright>
-    </ApolloProvider>,
+    </>,
     document.getElementById('app'),
 );

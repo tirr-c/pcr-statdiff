@@ -1,10 +1,13 @@
 import styled from 'astroturf';
 import React from 'react';
 
+import { autorun } from 'mobx';
+import { observer } from 'mobx-react';
+
 import { useQuery } from '@apollo/react-hooks';
 
 import { CharacterUnit, Stat } from './common-types';
-import CharacterStatQuery from './queries/CharacterStat.gql';
+import { UnitItem } from './state';
 import { statCombineLinear, calculateFinalStat } from './utils';
 
 import Stats from './Stats';
@@ -34,90 +37,52 @@ const StatContainer = styled.div`
 `;
 
 interface Props {
-    name: string;
+    unit: UnitItem;
 }
 
-export default function UnitStatItem(props: Props) {
-    const { name } = props;
-    const [rarity, setRarity] = React.useState(3);
+export default observer(function UnitStatItem(props: Props) {
+    const { unit } = props;
+    const name = unit.basicInfo.name;
     const [rarityDraft, setRarityDraft] = React.useState(3);
-    const [rank, setRank] = React.useState(10);
     const [rankDraft, setRankDraft] = React.useState('10');
-    const [level, setLevel] = React.useState(107);
     const [levelDraft, setLevelDraft] = React.useState('107');
-    const [equipmentFlags, setEquipmentFlags] = React.useState([false, false, false, false, false, false]);
-    const [enhanceLevels, setEnhanceLevels] = React.useState([0, 0, 0, 0, 0, 0]);
-    const [stat, setStat] = React.useState<Stat | null>(null);
+
+    React.useEffect(() => {
+        return autorun(() => {
+            setRarityDraft(unit.rarity);
+            setRankDraft(String(unit.rank));
+            setLevelDraft(String(unit.level));
+        });
+    }, [unit]);
 
     const handleRequery = React.useCallback(() => {
-        setRarity(rarityDraft);
-        setRank(Number(rankDraft));
-        setRankDraft(String(Number(rankDraft)));
-        setLevel(Number(levelDraft));
-        setLevelDraft(String(Number(levelDraft)));
-    }, [rarityDraft, rankDraft, levelDraft]);
+        const rarity = rarityDraft;
+        const rank = Number(rankDraft);
+        const level = Number(levelDraft);
+        unit.updateOptions({ rarity, rank, level });
+    }, [unit, rarityDraft, rankDraft, levelDraft]);
 
-    const handleEquipmentChange = React.useCallback((index: number, flag: boolean, enhanceLevel: number) => {
-        setEquipmentFlags(equipmentFlags => {
-            if (equipmentFlags[index] === flag) {
-                return equipmentFlags;
-            }
-            const result = [...equipmentFlags];
-            result[index] = flag;
-            return result;
-        });
-        setEnhanceLevels(enhanceLevels => {
-            if (enhanceLevels[index] === enhanceLevel) {
-                return enhanceLevels;
-            }
-            const result = [...enhanceLevels];
-            result[index] = enhanceLevel;
-            return result;
-        });
-    }, []);
-
-    const { loading, error, data } = useQuery<CharacterStatResult, CharacterStatVariables>(
-        CharacterStatQuery,
-        { variables: { name, rarity, rank } },
-    );
-
-    React.useEffect(
-        () => {
-            if (!loading && data && data.unit) {
-                setStat(calculateFinalStat(data.unit, rank, level, equipmentFlags, enhanceLevels));
-            }
-        },
-        [loading, data, rank, level, equipmentFlags, enhanceLevels],
-    );
-
-    if (error) {
-        return null;
-    }
-    if (loading || data == null || stat == null) {
+    if (unit.stat == null) {
         return null;
     }
 
-    const isDraft = rarity !== rarityDraft || String(rank) !== rankDraft || String(level) !== levelDraft;
+    const isDraft = unit.rarity !== rarityDraft || String(unit.rank) !== rankDraft || String(unit.level) !== levelDraft;
     return (
         <UnitStatItemContainer>
             <Unit
-                unit={data.unit}
+                unit={unit}
                 draft={isDraft}
-                rarity={rarity}
                 rarityDraft={rarityDraft}
                 rankDraft={rankDraft}
                 levelDraft={levelDraft}
-                enhanceLevels={enhanceLevels}
-                equipmentFlags={equipmentFlags}
                 onRarityDraftChange={setRarityDraft}
                 onRankDraftChange={setRankDraft}
                 onLevelDraftChange={setLevelDraft}
                 onApplyClick={handleRequery}
-                onEquipmentChange={handleEquipmentChange}
             />
             <StatContainer>
-                <Stats stat={stat} />
+                <Stats stat={unit.stat} />
             </StatContainer>
         </UnitStatItemContainer>
     );
-}
+});

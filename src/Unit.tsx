@@ -1,7 +1,10 @@
 import styled from 'astroturf';
 import React from 'react';
 
+import { observer } from 'mobx-react';
+
 import { CharacterUnit, Equipment, PromotionLevel } from './common-types';
+import { EquipmentItem, UnitItem } from './state';
 
 import Stars from './Stars';
 
@@ -66,11 +69,7 @@ const EquipmentName = styled.div`
 `;
 
 interface EquipmentViewProps {
-    equipment: Equipment;
-    index: number;
-    flag: boolean;
-    enhanceLevel: number;
-    onEquipmentChange?(index: number, flag: boolean, enhanceLevel: number): void;
+    equipment: EquipmentItem;
 }
 
 function getMaxEnhance(promotionLevel: PromotionLevel) {
@@ -83,48 +82,37 @@ function getMaxEnhance(promotionLevel: PromotionLevel) {
     }
 }
 
-function EquipmentView(props: EquipmentViewProps) {
-    const { equipment, index, flag, enhanceLevel, onEquipmentChange } = props;
-    const handlePromotionLevelChange = React.useCallback((level: number) => {
-        onEquipmentChange && onEquipmentChange(index, flag, level);
-    }, [index, flag, onEquipmentChange]);
-    const handleFlagToggle = React.useCallback(() => {
-        onEquipmentChange && onEquipmentChange(index, !flag, enhanceLevel);
-    }, [index, flag, enhanceLevel, onEquipmentChange]);
-
+const EquipmentView = observer((props: EquipmentViewProps) => {
+    const { equipment } = props;
     return (
         <Equipment>
-            <img src={buildEquipmentUrl(equipment.id, flag)} onClick={handleFlagToggle} />
+            <img src={buildEquipmentUrl(equipment.data.id, equipment.equipped)} onClick={equipment.toggleEquipped} />
             <EquipmentDetail>
-                <EquipmentName>{equipment.name}</EquipmentName>
+                <EquipmentName>{equipment.data.name}</EquipmentName>
                 <Stars
-                    value={enhanceLevel}
-                    max={getMaxEnhance(equipment.promotionLevel)}
-                    onChange={handlePromotionLevelChange}
+                    value={equipment.enhanceLevel}
+                    max={getMaxEnhance(equipment.data.promotionLevel)}
+                    onChange={equipment.updateEnhanceLevel}
                 />
             </EquipmentDetail>
         </Equipment>
     );
-}
+});
 
 interface Props {
-    unit: CharacterUnit;
+    unit: UnitItem;
     draft?: boolean;
-    rarity: number;
     rarityDraft: number;
     rankDraft: string;
     levelDraft: string;
-    equipmentFlags: boolean[];
-    enhanceLevels: number[];
     onRarityDraftChange?(rarity: number): void;
     onRankDraftChange?(rank: string): void;
     onLevelDraftChange?(level: string): void;
     onApplyClick?(): void;
-    onEquipmentChange?(index: number, flag: boolean, enhanceLevel: number): void;
 }
 
-export default function Unit(props: Props) {
-    const { unit, draft, rarity, rarityDraft, rankDraft, levelDraft, equipmentFlags, enhanceLevels } = props;
+export default observer(function Unit(props: Props) {
+    const { unit, draft, rarityDraft, rankDraft, levelDraft } = props;
     const { onRankDraftChange, onLevelDraftChange } = props;
 
     const handleRankChange = React.useCallback(e => {
@@ -138,9 +126,9 @@ export default function Unit(props: Props) {
     return (
         <UnitContainer>
             <UnitData>
-                <img src={buildUnitUrl(unit.id, rarity)} />
+                <img src={buildUnitUrl(unit.basicInfo.id, unit.rarity)} />
                 <UnitDetail>
-                    <div>{unit.name}</div>
+                    <div>{unit.basicInfo.name}</div>
                     <Stars value={rarityDraft} max={5} onChange={props.onRarityDraftChange} />
                     <div>RANK <input type="number" min={1} value={rankDraft} onChange={handleRankChange} /></div>
                     <div>레벨 <input type="number" min={1} value={levelDraft} onChange={handleLevelChange} /></div>
@@ -149,16 +137,9 @@ export default function Unit(props: Props) {
             </UnitData>
             <Equipments>
                 {unit.equipments.map((equipment, idx) => (
-                    <EquipmentView
-                        key={idx}
-                        equipment={equipment}
-                        index={idx}
-                        flag={equipmentFlags[idx]}
-                        enhanceLevel={enhanceLevels[idx]}
-                        onEquipmentChange={props.onEquipmentChange}
-                    />
+                    <EquipmentView key={idx} equipment={equipment} />
                 ))}
             </Equipments>
         </UnitContainer>
     );
-}
+});

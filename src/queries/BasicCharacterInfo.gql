@@ -1,0 +1,7 @@
+query BasicCharacterInfo($name: String!) {
+  unit: characterUnit(name: $name) {
+    id
+    name
+    rarity
+  }
+}
