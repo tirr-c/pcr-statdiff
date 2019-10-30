@@ -42,47 +42,15 @@ interface Props {
 
 export default observer(function UnitStatItem(props: Props) {
     const { unit } = props;
-    const name = unit.basicInfo.name;
-    const [rarityDraft, setRarityDraft] = React.useState(3);
-    const [rankDraft, setRankDraft] = React.useState('10');
-    const [levelDraft, setLevelDraft] = React.useState('107');
 
-    React.useEffect(() => {
-        return autorun(() => {
-            setRarityDraft(unit.rarity);
-            setRankDraft(String(unit.rank));
-            setLevelDraft(String(unit.level));
-        });
-    }, [unit]);
-
-    const handleRequery = React.useCallback(() => {
-        const rarity = rarityDraft;
-        const rank = Number(rankDraft);
-        const level = Number(levelDraft);
-        unit.updateOptions({ rarity, rank, level });
-    }, [unit, rarityDraft, rankDraft, levelDraft]);
-
-    if (unit.stat == null) {
-        return null;
-    }
-
-    const isDraft = unit.rarity !== rarityDraft || String(unit.rank) !== rankDraft || String(unit.level) !== levelDraft;
     return (
         <UnitStatItemContainer>
-            <Unit
-                unit={unit}
-                draft={isDraft}
-                rarityDraft={rarityDraft}
-                rankDraft={rankDraft}
-                levelDraft={levelDraft}
-                onRarityDraftChange={setRarityDraft}
-                onRankDraftChange={setRankDraft}
-                onLevelDraftChange={setLevelDraft}
-                onApplyClick={handleRequery}
-            />
-            <StatContainer>
-                <Stats stat={unit.stat} />
-            </StatContainer>
+            <Unit unit={unit} />
+            {unit.stat != null && (
+                <StatContainer>
+                    <Stats stat={unit.stat} />
+                </StatContainer>
+            )}
         </UnitStatItemContainer>
     );
 });

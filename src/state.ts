@@ -72,6 +72,7 @@ export class UnitItem {
 
     constructor(
         private apolloClient: ApolloClient<any>,
+        public id: number,
         public basicInfo: BasicCharacterInfo,
     ) {}
 
@@ -79,7 +80,6 @@ export class UnitItem {
     async fetch() {
         try {
             this.loading = true;
-            this.equipments = [];
             this.baseStat = null;
             this.growthRate = null;
             this.statByRank = null;
@@ -93,7 +93,12 @@ export class UnitItem {
                     this.loading = false;
                     return;
                 }
-                this.equipments = unit.equipments.map(equipment => new EquipmentItem(equipment));
+                if (
+                    this.equipments.length !== unit.equipments.length ||
+                    !unit.equipments.every((equipment, idx) => equipment.id === this.equipments[idx].data.id)
+                ) {
+                    this.equipments = unit.equipments.map(equipment => new EquipmentItem(equipment));
+                }
                 this.baseStat = unit.stat.base;
                 this.growthRate = unit.stat.growthRate;
                 this.statByRank = unit.statByRank;
@@ -123,6 +128,8 @@ export class UnitItem {
 }
 
 export class State {
+    private counter: number = 0;
+
     @observable units: UnitItem[] = [];
 
     constructor(private apolloClient: ApolloClient<any>) {}
@@ -138,7 +145,7 @@ export class State {
         }
 
         const basicInfo = result.data.unit;
-        const unit = new UnitItem(this.apolloClient, basicInfo);
+        const unit = new UnitItem(this.apolloClient, this.counter++, basicInfo);
         runInAction(async () => {
             this.units.push(unit);
             await unit.fetch();

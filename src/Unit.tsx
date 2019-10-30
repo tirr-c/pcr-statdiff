@@ -1,6 +1,7 @@
 import styled from 'astroturf';
 import React from 'react';
 
+import { reaction } from 'mobx';
 import { observer } from 'mobx-react';
 
 import { CharacterUnit, Equipment, PromotionLevel } from './common-types';
@@ -86,7 +87,11 @@ const EquipmentView = observer((props: EquipmentViewProps) => {
     const { equipment } = props;
     return (
         <Equipment>
-            <img src={buildEquipmentUrl(equipment.data.id, equipment.equipped)} onClick={equipment.toggleEquipped} />
+            <img
+                key={`${equipment.data.id}-${equipment.equipped}`}
+                src={buildEquipmentUrl(equipment.data.id, equipment.equipped)}
+                onClick={equipment.toggleEquipped}
+            />
             <EquipmentDetail>
                 <EquipmentName>{equipment.data.name}</EquipmentName>
                 <Stars
@@ -101,38 +106,53 @@ const EquipmentView = observer((props: EquipmentViewProps) => {
 
 interface Props {
     unit: UnitItem;
-    draft?: boolean;
-    rarityDraft: number;
-    rankDraft: string;
-    levelDraft: string;
-    onRarityDraftChange?(rarity: number): void;
-    onRankDraftChange?(rank: string): void;
-    onLevelDraftChange?(level: string): void;
-    onApplyClick?(): void;
 }
 
 export default observer(function Unit(props: Props) {
-    const { unit, draft, rarityDraft, rankDraft, levelDraft } = props;
-    const { onRankDraftChange, onLevelDraftChange } = props;
+    const { unit } = props;
+    const [rarityDraft, setRarityDraft] = React.useState(1);
+    const [rankDraft, setRankDraft] = React.useState('1');
+    const [levelDraft, setLevelDraft] = React.useState('1');
+
+    React.useEffect(() => {
+        return reaction(
+            () => unit.loading,
+            loading => {
+                if (!loading) {
+                    setRarityDraft(unit.rarity);
+                    setRankDraft(String(unit.rank));
+                    setLevelDraft(String(unit.level));
+                }
+            },
+        );
+    }, [unit]);
+
+    const handleRequery = React.useCallback(() => {
+        const rarity = rarityDraft;
+        const rank = Number(rankDraft);
+        const level = Number(levelDraft);
+        unit.updateOptions({ rarity, rank, level });
+    }, [unit, rarityDraft, rankDraft, levelDraft]);
 
     const handleRankChange = React.useCallback(e => {
-        onRankDraftChange && onRankDraftChange(e.target.value);
-    }, [onRankDraftChange]);
+        setRankDraft(e.target.value);
+    }, []);
 
     const handleLevelChange = React.useCallback(e => {
-        onLevelDraftChange && onLevelDraftChange(e.target.value);
-    }, [onLevelDraftChange]);
+        setLevelDraft(e.target.value);
+    }, []);
 
+    const isDraft = unit.rarity !== rarityDraft || String(unit.rank) !== rankDraft || String(unit.level) !== levelDraft;
     return (
         <UnitContainer>
             <UnitData>
                 <img src={buildUnitUrl(unit.basicInfo.id, unit.rarity)} />
                 <UnitDetail>
                     <div>{unit.basicInfo.name}</div>
-                    <Stars value={rarityDraft} max={5} onChange={props.onRarityDraftChange} />
+                    <Stars value={rarityDraft} max={5} onChange={setRarityDraft} />
                     <div>RANK <input type="number" min={1} value={rankDraft} onChange={handleRankChange} /></div>
                     <div>레벨 <input type="number" min={1} value={levelDraft} onChange={handleLevelChange} /></div>
-                    <button disabled={!draft} onClick={props.onApplyClick}>적용</button>
+                    <button disabled={unit.loading || !isDraft} onClick={handleRequery}>{unit.loading ? '로드 중' : '적용'}</button>
                 </UnitDetail>
             </UnitData>
             <Equipments>
