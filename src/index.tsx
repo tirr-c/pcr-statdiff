@@ -11,11 +11,8 @@ const apolloClient = new ApolloClient({
     uri: GQL_ENDPOINT,
 });
 
-const ORIGINAL_ASSET_COPYRIGHT = 'Cygames와 카카오게임즈';
-
-const Copyright = styled.footer`
+const Footer = styled.footer`
     margin-top: 8px;
-    padding-top: 8px;
     border-top: 1px solid silver;
     font-size: 0.8em;
     word-break: keep-all;
@@ -23,12 +20,17 @@ const Copyright = styled.footer`
 
 ReactDOM.render(
     <>
-        <h1>프리코네R 캐릭터 스탯</h1>
+        <h1>{TITLE}</h1>
         <App state={new State(apolloClient)} />
-        <Copyright>
-            <code>{new URL(GQL_ENDPOINT).host}</code>, <code>{new URL(STATIC_BASE_URL).host}</code>에서 제공되는
-            데이터의 저작권은 {ORIGINAL_ASSET_COPYRIGHT}에 있습니다.
-        </Copyright>
+        <Footer>
+            <p>
+                버전 <code>{VERSION}</code>, 소스 코드는 MIT 라이선스로 <a href={REPOSITORY_URL}>배포되고 있습니다</a>.
+            </p>
+            <p>
+                <code>{new URL(GQL_ENDPOINT).host}</code>, <code>{new URL(STATIC_BASE_URL).host}</code>에서 제공되는
+                데이터의 저작권은 {ORIGINAL_ASSET_COPYRIGHT}에 있습니다.
+            </p>
+        </Footer>
     </>,
     document.getElementById('app'),
 );

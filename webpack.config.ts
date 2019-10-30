@@ -1,3 +1,5 @@
+import * as childProcess from 'child_process';
+import * as fs from 'fs';
 import * as path from 'path';
 
 import webpack from 'webpack';
@@ -10,7 +12,22 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import OptimizeCssAssetsPlugin from 'optimize-css-assets-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
 
-export default function configure(env = 'dev'): webpack.Configuration {
+const TITLE = '프리코네R 캐릭터 스탯 계산기';
+const ORIGINAL_ASSET_COPYRIGHT = 'Cygames와 카카오게임즈';
+export default async function configure(env = 'dev'): Promise<webpack.Configuration> {
+    const rawPackageJson = await fs.promises.readFile(path.resolve(__dirname, 'package.json'));
+    const packageJson = JSON.parse(rawPackageJson.toString());
+    const version = packageJson.version;
+    const gitVersion = await new Promise((resolve, reject) => {
+        childProcess.exec('git rev-parse --short @', (err, stdout) => {
+            if (err != null) {
+                reject(err);
+                return;
+            }
+            resolve(stdout.toString().trim());
+        });
+    });
+
     const isProduction = env === 'prod';
     const baseConfig = {
         mode: isProduction ? 'production' as 'production' : 'development' as 'development',
@@ -68,12 +85,16 @@ export default function configure(env = 'dev'): webpack.Configuration {
             new webpack.DefinePlugin({
                 GQL_ENDPOINT: JSON.stringify(process.env.GQL_ENDPOINT || '//localhost:8000/graphql'),
                 STATIC_BASE_URL: JSON.stringify(process.env.STATIC_BASE_URL || 'https://ames-static.tirr.dev/'),
+                VERSION: JSON.stringify(`${version}-git.${gitVersion}${env === 'prod' ? '' : '.' + env}`),
+                REPOSITORY_URL: JSON.stringify(packageJson.repository),
+                TITLE: JSON.stringify(TITLE),
+                ORIGINAL_ASSET_COPYRIGHT: JSON.stringify(ORIGINAL_ASSET_COPYRIGHT),
             }),
             new CleanWebpackPlugin(),
             new HtmlWebpackPlugin({
                 template: path.resolve(__dirname, 'src/index.html'),
-                title: 'Template by tirr-c',
-                description: 'Placeholder description.',
+                title: TITLE,
+                description: '캐릭터 능력치를 계산하고 비교해 보세요.',
                 meta: {
                     viewport: 'width=device-width, initial-scale=1, shrink-to-fit=no',
                 },
