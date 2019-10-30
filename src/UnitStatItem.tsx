@@ -26,6 +26,8 @@ type CharacterStatResult = {
 const UnitStatItemContainer = styled.div`
     display: flex;
     flex-wrap: wrap;
+    padding-top: 12px;
+    border-top: 1px solid silver;
 `;
 
 const StatContainer = styled.div`

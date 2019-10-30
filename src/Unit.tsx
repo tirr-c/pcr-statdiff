@@ -143,10 +143,11 @@ export default observer(function Unit(props: Props) {
     }, []);
 
     const isDraft = unit.rarity !== rarityDraft || String(unit.rank) !== rankDraft || String(unit.level) !== levelDraft;
+    const unitIconUrl = buildUnitUrl(unit.basicInfo.id, unit.rarity);
     return (
         <UnitContainer>
             <UnitData>
-                <img src={buildUnitUrl(unit.basicInfo.id, unit.rarity)} />
+                <img key={unitIconUrl} src={unitIconUrl} />
                 <UnitDetail>
                     <div>{unit.basicInfo.name}</div>
                     <Stars value={rarityDraft} max={5} onChange={setRarityDraft} />
