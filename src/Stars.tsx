@@ -50,9 +50,9 @@ export default function Stars(props: Props) {
 
     return (
         <StarsContainer>
-            <AdjustButton onClick={handleDecrease}>-</AdjustButton>
+            <AdjustButton type="button" onClick={handleDecrease}>-</AdjustButton>
             <StarList>{'★'.repeat(value)}{'☆'.repeat(max - value)}</StarList>
-            <AdjustButton onClick={handleIncrease}>+</AdjustButton>
+            <AdjustButton type="button" onClick={handleIncrease}>+</AdjustButton>
         </StarsContainer>
     );
 }

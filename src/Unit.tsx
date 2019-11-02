@@ -32,7 +32,7 @@ const UnitData = styled.div`
     }
 `;
 
-const UnitDetail = styled.div`
+const UnitDetail = styled.form`
     margin-left: 8px;
 `;
 
@@ -113,6 +113,7 @@ export default observer(function Unit(props: Props) {
     const [rarityDraft, setRarityDraft] = React.useState(1);
     const [rankDraft, setRankDraft] = React.useState('1');
     const [levelDraft, setLevelDraft] = React.useState('1');
+    const isDraft = unit.rarity !== rarityDraft || String(unit.rank) !== rankDraft || String(unit.level) !== levelDraft;
 
     React.useEffect(() => {
         return reaction(
@@ -127,7 +128,8 @@ export default observer(function Unit(props: Props) {
         );
     }, [unit]);
 
-    const handleRequery = React.useCallback(() => {
+    const handleRequery = React.useCallback(e => {
+        e.preventDefault();
         const rarity = rarityDraft;
         const rank = Number(rankDraft);
         const level = Number(levelDraft);
@@ -142,18 +144,17 @@ export default observer(function Unit(props: Props) {
         setLevelDraft(e.target.value);
     }, []);
 
-    const isDraft = unit.rarity !== rarityDraft || String(unit.rank) !== rankDraft || String(unit.level) !== levelDraft;
     const unitIconUrl = buildUnitUrl(unit.basicInfo.id, unit.rarity);
     return (
         <UnitContainer>
             <UnitData>
                 <img key={unitIconUrl} src={unitIconUrl} />
-                <UnitDetail>
+                <UnitDetail onSubmit={handleRequery}>
                     <div>{unit.basicInfo.name}</div>
                     <Stars value={rarityDraft} max={5} onChange={setRarityDraft} />
                     <div>RANK <input type="number" min={1} value={rankDraft} onChange={handleRankChange} /></div>
                     <div>레벨 <input type="number" min={1} value={levelDraft} onChange={handleLevelChange} /></div>
-                    <button disabled={unit.loading || !isDraft} onClick={handleRequery}>{unit.loading ? '로드 중' : '적용'}</button>
+                    <input type="submit" disabled={unit.loading || !isDraft} value={unit.loading ? '로드 중' : '적용'} />
                 </UnitDetail>
             </UnitData>
             <Equipments>
