@@ -10,11 +10,6 @@ import { EquipmentItem, UnitItem } from './state';
 import EquipmentList from './EquipmentList';
 import Stars from './Stars';
 
-const buildUnitUrl = (id: number, rarity: number) => {
-    const realId = id + (rarity >= 3 ? 30 : 10);
-    return new URL(`/icons/unit/${realId}.png`, STATIC_BASE_URL).toString();
-};
-
 const UnitContainer = styled.div`
     width: 500px;
     margin-bottom: 12px;
@@ -73,11 +68,10 @@ export default observer(function Unit(props: Props) {
         setLevelDraft(e.target.value);
     }, []);
 
-    const unitIconUrl = buildUnitUrl(unit.basicInfo.id, unit.rarity);
     return (
         <UnitContainer>
             <UnitData>
-                <img key={unitIconUrl} src={unitIconUrl} />
+                <img key={unit.iconId} src={unit.iconUrl} />
                 <UnitDetail onSubmit={handleRequery}>
                     <div>{unit.basicInfo.name}</div>
                     <Stars value={rarityDraft} max={5} onChange={setRarityDraft} />

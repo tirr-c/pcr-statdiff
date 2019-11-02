@@ -2,7 +2,7 @@ import { action, computed, observable, runInAction } from 'mobx';
 
 import ApolloClient from 'apollo-boost';
 
-import { BasicCharacterInfo, CharacterUnit, Equipment, Stat } from './common-types';
+import { BasicCharacterInfo, CharacterUnit, Equipment, PromotionLevel, Stat } from './common-types';
 import { statCombineLinear } from './utils';
 import BasicCharacterInfoQuery from './queries/BasicCharacterInfo.gql';
 import CharacterStatQuery from './queries/CharacterStat.gql';
@@ -10,6 +10,23 @@ import CharacterStatQuery from './queries/CharacterStat.gql';
 export class EquipmentItem {
     @observable equipped: boolean = false;
     @observable enhanceLevel: number = 0;
+
+    @computed get iconUrl(): string {
+        const id = this.data.id;
+        const path = this.equipped ? `/icons/equipment/${id}.png` : `/icons/equipment/invalid/${id}.png`;
+        return new URL(path, STATIC_BASE_URL).toString();
+    }
+
+    @computed get maxEnhanceLevel(): number {
+        const promotionLevel = this.data.promotionLevel;
+        switch (promotionLevel) {
+            case PromotionLevel.Blue: return 0;
+            case PromotionLevel.Bronze: return 1;
+            case PromotionLevel.Silver: return 3;
+            case PromotionLevel.Gold:
+            case PromotionLevel.Purple: return 5;
+        }
+    }
 
     @computed get stat(): Stat | null {
         if (!this.equipped) {
@@ -43,6 +60,18 @@ export class UnitItem {
     @observable baseStat: Stat | null = null;
     @observable growthRate: Stat | null = null;
     @observable statByRank: Stat | null = null;
+
+    get minRarity(): number {
+        return this.basicInfo.rarity;
+    }
+
+    @computed get iconId(): number {
+        return this.basicInfo.id + (this.rarity >= 3 ? 30 : 10);
+    }
+
+    @computed get iconUrl(): string {
+        return new URL(`/icons/unit/${this.iconId}.png`, STATIC_BASE_URL).toString();
+    }
 
     @computed get isValid(): boolean {
         return this.baseStat != null && this.growthRate != null;
