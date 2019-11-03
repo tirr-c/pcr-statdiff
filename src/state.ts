@@ -6,17 +6,13 @@ import { BasicCharacterInfo, Equipment, PromotionLevel, Stat } from './common-ty
 import Transport from './transport';
 import { statCombineLinear } from './utils';
 
-export class EquipmentItem {
+export class KnownEquipmentItem {
     @observable equipped: boolean = false;
     @observable enhanceLevel: number = 0;
 
     @computed get iconKey(): string {
-        if (this.data == null) {
-            return '999999';
-        } else {
-            const id = this.data.id;
-            return this.equipped ? `${id}` : `invalid/${id}`;
-        }
+        const id = this.data.id;
+        return this.equipped ? `${id}` : `invalid/${id}`;
     }
 
     @computed get iconUrl(): string {
@@ -26,13 +22,10 @@ export class EquipmentItem {
     }
 
     get name(): string {
-        return this.data ? this.data.name : '미구현 장비';
+        return this.data.name;
     }
 
     @computed get maxEnhanceLevel(): number {
-        if (this.data == null) {
-            return 0;
-        }
         const promotionLevel = this.data.promotionLevel;
         switch (promotionLevel) {
             case PromotionLevel.Blue: return 0;
@@ -44,7 +37,7 @@ export class EquipmentItem {
     }
 
     @computed get stat(): Stat | null {
-        if (this.data == null || !this.equipped) {
+        if (!this.equipped) {
             return null;
         }
         return statCombineLinear([
@@ -53,22 +46,135 @@ export class EquipmentItem {
         ]);
     }
 
-    constructor(public data: Equipment | null) {}
+    constructor(public data: Equipment) {}
 
     @action.bound
     updateEnhanceLevel(enhanceLevel: number) {
-        if (this.data == null) {
-            return;
-        }
         this.enhanceLevel = enhanceLevel;
     }
 
     @action.bound
+    changeEquipState(equipped: boolean) {
+        this.equipped = equipped;
+    }
+
+    @action.bound
     toggleEquipped() {
-        if (this.data == null) {
-            return;
-        }
         this.equipped = !this.equipped;
+    }
+}
+
+export class UnknownEquipmentItem {
+    get data(): null {
+        return null;
+    }
+
+    get equipped(): boolean {
+        return true;
+    }
+
+    get enhanceLevel(): number {
+        return 0;
+    }
+
+    get iconKey(): string {
+        return '999999';
+    }
+
+    get iconUrl(): string {
+        const path = '/icons/equipment/999999.png';
+        return new URL(path, STATIC_BASE_URL).toString();
+    }
+
+    get name(): string {
+        return '미구현 장비';
+    }
+
+    get maxEnhanceLevel(): number {
+        return 0;
+    }
+
+    get stat(): Stat | null {
+        return null;
+    }
+
+    updateEnhanceLevel(enhanceLevel: number) {
+    }
+
+    changeEquipState(equipped: boolean) {
+    }
+
+    toggleEquipped() {
+    }
+}
+
+export type EquipmentItem = KnownEquipmentItem | UnknownEquipmentItem;
+
+function createEquipmentItem(data: Equipment | null): EquipmentItem {
+    if (data == null) {
+        return new UnknownEquipmentItem();
+    }
+    return new KnownEquipmentItem(data);
+}
+
+export class EquipmentList {
+    private static readonly unknownList = Array.from({ length: 6 }, () => new UnknownEquipmentItem());
+
+    @observable equipments: EquipmentItem[] = [];
+
+    @computed get isAllEquipped(): boolean {
+        return this.equipments.every(equipment => equipment.equipped);
+    }
+
+    @computed get isAllEnhanced(): boolean {
+        return this.equipments.every(equipment => !equipment.equipped || equipment.enhanceLevel === equipment.maxEnhanceLevel);
+    }
+
+    @computed get statTerms(): [Stat, number][] {
+        return this.equipments
+            .filter(equipment => equipment.stat != null)
+            .map(equipment => [equipment.stat!, 1]);
+    }
+
+    @action.bound
+    toggleEquipState() {
+        const newEquipState = !this.isAllEquipped;
+        for (const equipment of this.equipments) {
+            equipment.changeEquipState(newEquipState);
+        }
+    }
+
+    @action.bound
+    toggleEnhanceState() {
+        if (this.isAllEnhanced) {
+            for (const equipment of this.equipments) {
+                equipment.updateEnhanceLevel(0);
+            }
+        } else {
+            for (const equipment of this.equipments) {
+                if (equipment.equipped) {
+                    equipment.updateEnhanceLevel(equipment.maxEnhanceLevel);
+                }
+            }
+        }
+    }
+
+    @action.bound
+    updateEquipments(equipments: (Equipment | null)[] | null) {
+        if (equipments == null) {
+            this.equipments = EquipmentList.unknownList;
+        } else if (
+            this.equipments.length !== equipments.length ||
+            !equipments.every((equipment, idx) => {
+                const targetData = this.equipments[idx].data;
+                if (equipment == null) {
+                    return targetData == null;
+                }
+                return targetData != null && equipment.id === targetData.id;
+            })
+        ) {
+            this.equipments = equipments.map(createEquipmentItem);
+        }
     }
 }
 
@@ -77,7 +183,7 @@ export class UnitItem {
     @observable rank: number = 1;
     @observable level: number = 1;
     @observable loading: boolean = false;
-    @observable equipments: EquipmentItem[] = [];
+    @observable equipments: EquipmentList = new EquipmentList();
     @observable baseStat: Stat | null = null;
     @observable growthRate: Stat | null = null;
     @observable statByRank: Stat | null = null;
@@ -106,15 +212,10 @@ export class UnitItem {
         const statTerms: [Stat, number][] = [
             [this.baseStat!, 1],
             [this.growthRate!, this.level + this.rank],
+            ...this.equipments.statTerms,
         ];
         if (this.statByRank != null) {
             statTerms.push([this.statByRank, 1]);
-        }
-        for (const equipment of this.equipments) {
-            if (equipment.stat == null) {
-                continue;
-            }
-            statTerms.push([equipment.stat, 1]);
         }
         return statCombineLinear(statTerms);
     }
@@ -142,20 +243,7 @@ export class UnitItem {
                     this.loading = false;
                     return;
                 }
-                if (unit.equipments == null) {
-                    this.equipments = [];
-                } else if (
-                    this.equipments.length !== unit.equipments.length ||
-                    !unit.equipments.every((equipment, idx) => {
-                        const targetData = this.equipments[idx].data;
-                        if (equipment == null) {
-                            return targetData == null;
-                        }
-                        return targetData != null && equipment.id === targetData.id;
-                    })
-                ) {
-                    this.equipments = unit.equipments.map(equipment => new EquipmentItem(equipment));
-                }
+                this.equipments.updateEquipments(unit.equipments);
                 this.baseStat = unit.stat.base;
                 this.growthRate = unit.stat.growthRate;
                 this.statByRank = unit.statByRank;

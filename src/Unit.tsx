@@ -7,6 +7,7 @@ import { observer } from 'mobx-react';
 import { CharacterUnit, Equipment, PromotionLevel } from './common-types';
 import { EquipmentItem, UnitItem } from './state';
 
+import EquipmentControl from './EquipmentControl';
 import EquipmentList from './EquipmentList';
 import Stars from './Stars';
 
@@ -40,6 +41,11 @@ export default observer(function Unit(props: Props) {
     const isDraft = unit.rarity !== rarityDraft || String(unit.rank) !== rankDraft || String(unit.level) !== levelDraft;
 
     React.useEffect(() => {
+        if (!unit.loading) {
+            setRarityDraft(unit.rarity);
+            setRankDraft(String(unit.rank));
+            setLevelDraft(String(unit.level));
+        }
         return reaction(
             () => unit.loading,
             loading => {
@@ -81,6 +87,7 @@ export default observer(function Unit(props: Props) {
                 </UnitDetail>
             </UnitData>
             <EquipmentList equipments={unit.equipments} />
+            <EquipmentControl equipments={unit.equipments} />
         </UnitContainer>
     );
 });

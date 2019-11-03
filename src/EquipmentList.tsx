@@ -3,7 +3,7 @@ import React from 'react';
 
 import { observer } from 'mobx-react';
 
-import { EquipmentItem } from './state';
+import { EquipmentList } from './state';
 
 import EquipmentItemView from './EquipmentItemView';
 
@@ -22,13 +22,13 @@ const Container = styled.ul`
 `;
 
 interface Props {
-    equipments: EquipmentItem[];
+    equipments: EquipmentList;
 }
 
 export default observer(function EquipmentList(props: Props) {
     return (
         <Container>
-            {props.equipments.map((equipment, idx) => (
+            {props.equipments.equipments.map((equipment, idx) => (
                 <EquipmentItemView key={idx} equipment={equipment} />
             ))}
         </Container>
