@@ -2,10 +2,9 @@ import { action, computed, observable, runInAction } from 'mobx';
 
 import ApolloClient from 'apollo-boost';
 
-import { BasicCharacterInfo, CharacterUnit, Equipment, PromotionLevel, Stat } from './common-types';
+import { BasicCharacterInfo, Equipment, PromotionLevel, Stat } from './common-types';
+import Transport from './transport';
 import { statCombineLinear } from './utils';
-import BasicCharacterInfoQuery from './queries/BasicCharacterInfo.gql';
-import CharacterStatQuery from './queries/CharacterStat.gql';
 
 export class EquipmentItem {
     @observable equipped: boolean = false;
@@ -95,12 +94,11 @@ export class UnitItem {
             }
             statTerms.push([equipment.stat, 1]);
         }
-        console.log(statTerms);
         return statCombineLinear(statTerms);
     }
 
     constructor(
-        private apolloClient: ApolloClient<any>,
+        private transport: Transport,
         public id: number,
         public basicInfo: BasicCharacterInfo,
     ) {}
@@ -112,11 +110,11 @@ export class UnitItem {
             this.baseStat = null;
             this.growthRate = null;
             this.statByRank = null;
-            const result = await this.apolloClient.query<{ unit: CharacterUnit | null }>({
-                query: CharacterStatQuery,
-                variables: { name: this.basicInfo.name, rarity: this.rarity, rank: this.rank },
+            const unit = await this.transport.getCharacterStat({
+                name: this.basicInfo.name,
+                rarity: this.rarity,
+                rank: this.rank,
             });
-            const unit = result.data.unit;
             runInAction(() => {
                 if (unit == null) {
                     this.loading = false;
@@ -161,20 +159,16 @@ export class State {
 
     @observable units: UnitItem[] = [];
 
-    constructor(private apolloClient: ApolloClient<any>) {}
+    constructor(private transport: Transport) {}
 
     @action.bound
     public async addUnit(name: string) {
-        const result = await this.apolloClient.query<{ unit: BasicCharacterInfo | null }>({
-            query: BasicCharacterInfoQuery,
-            variables: { name },
-        });
-        if (result.data.unit == null) {
+        const basicInfo = await this.transport.getBasicCharacterInfo(name);
+        if (basicInfo == null) {
             return;
         }
 
-        const basicInfo = result.data.unit;
-        const unit = new UnitItem(this.apolloClient, this.counter++, basicInfo);
+        const unit = new UnitItem(this.transport, this.counter++, basicInfo);
         runInAction(async () => {
             this.units.push(unit);
             await unit.fetch();
