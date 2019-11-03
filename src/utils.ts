@@ -1,4 +1,4 @@
-import { CharacterUnit, PromotionLevel, Stat } from './common-types';
+import { CharacterUnit, Equipment, PromotionLevel, Stat } from './common-types';
 
 export function statCombineLinear(statCoeffPair: [Stat, number][]) {
     const result: Stat = {
@@ -33,10 +33,11 @@ export function calculateFinalStat(
     equipmentFlags: boolean[],
     equipmentEnhanceLevels: number[],
 ): Stat {
-    const equipmentBaseStats = unit.equipments
+    const filteredEquipments = (unit.equipments || []).filter(equipment => equipment != null) as Equipment[];
+    const equipmentBaseStats = filteredEquipments
         .map((equipment): [Stat, number] => [equipment.stat, 1])
         .filter((_, idx) => equipmentFlags[idx]);
-    const equipmentGrowthStats = unit.equipments
+    const equipmentGrowthStats = filteredEquipments
         .map((equipment, idx): [Stat, number] => [equipment.growthRate, equipmentEnhanceLevels[idx]])
         .filter((_, idx) => equipmentFlags[idx]);
     return statCombineLinear([

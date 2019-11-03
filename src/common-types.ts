@@ -46,6 +46,6 @@ export interface CharacterUnit {
         base: Stat;
         growthRate: Stat;
     };
-    statByRank: Stat;
-    equipments: Equipment[];
+    statByRank: Stat | null;
+    equipments: (Equipment | null)[] | null;
 }

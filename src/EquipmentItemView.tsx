@@ -36,17 +36,19 @@ export default observer(function EquipmentItemView(props: Props) {
     return (
         <Container>
             <img
-                key={`${equipment.data.id}-${equipment.equipped}`}
+                key={equipment.iconKey}
                 src={equipment.iconUrl}
                 onClick={equipment.toggleEquipped}
             />
             <EquipmentDetail>
-                <EquipmentName>{equipment.data.name}</EquipmentName>
-                <Stars
-                    value={equipment.enhanceLevel}
-                    max={equipment.maxEnhanceLevel}
-                    onChange={equipment.updateEnhanceLevel}
-                />
+                <EquipmentName>{equipment.name}</EquipmentName>
+                {equipment.maxEnhanceLevel > 0 && (
+                    <Stars
+                        value={equipment.enhanceLevel}
+                        max={equipment.maxEnhanceLevel}
+                        onChange={equipment.updateEnhanceLevel}
+                    />
+                )}
             </EquipmentDetail>
         </Container>
     );

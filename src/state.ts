@@ -10,13 +10,29 @@ export class EquipmentItem {
     @observable equipped: boolean = false;
     @observable enhanceLevel: number = 0;
 
+    @computed get iconKey(): string {
+        if (this.data == null) {
+            return '999999';
+        } else {
+            const id = this.data.id;
+            return this.equipped ? `${id}` : `invalid/${id}`;
+        }
+    }
+
     @computed get iconUrl(): string {
-        const id = this.data.id;
-        const path = this.equipped ? `/icons/equipment/${id}.png` : `/icons/equipment/invalid/${id}.png`;
+        const key = this.iconKey;
+        const path = `/icons/equipment/${key}.png`;
         return new URL(path, STATIC_BASE_URL).toString();
     }
 
+    get name(): string {
+        return this.data ? this.data.name : '미구현 장비';
+    }
+
     @computed get maxEnhanceLevel(): number {
+        if (this.data == null) {
+            return 0;
+        }
         const promotionLevel = this.data.promotionLevel;
         switch (promotionLevel) {
             case PromotionLevel.Blue: return 0;
@@ -28,7 +44,7 @@ export class EquipmentItem {
     }
 
     @computed get stat(): Stat | null {
-        if (!this.equipped) {
+        if (this.data == null || !this.equipped) {
             return null;
         }
         return statCombineLinear([
@@ -37,15 +53,21 @@ export class EquipmentItem {
         ]);
     }
 
-    constructor(public data: Equipment) {}
+    constructor(public data: Equipment | null) {}
 
     @action.bound
     updateEnhanceLevel(enhanceLevel: number) {
+        if (this.data == null) {
+            return;
+        }
         this.enhanceLevel = enhanceLevel;
     }
 
     @action.bound
     toggleEquipped() {
+        if (this.data == null) {
+            return;
+        }
         this.equipped = !this.equipped;
     }
 }
@@ -120,9 +142,17 @@ export class UnitItem {
                     this.loading = false;
                     return;
                 }
-                if (
+                if (unit.equipments == null) {
+                    this.equipments = [];
+                } else if (
                     this.equipments.length !== unit.equipments.length ||
-                    !unit.equipments.every((equipment, idx) => equipment.id === this.equipments[idx].data.id)
+                    !unit.equipments.every((equipment, idx) => {
+                        const targetData = this.equipments[idx].data;
+                        if (equipment == null) {
+                            return targetData == null;
+                        }
+                        return targetData != null && equipment.id === targetData.id;
+                    })
                 ) {
                     this.equipments = unit.equipments.map(equipment => new EquipmentItem(equipment));
                 }
