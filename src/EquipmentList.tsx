@@ -2,8 +2,9 @@ import styled from 'astroturf';
 import React from 'react';
 
 import { observer } from 'mobx-react';
+import { types } from 'mobx-state-tree';
 
-import { EquipmentList } from './state';
+import { EquipmentItem } from './state';
 
 import EquipmentItemView from './EquipmentItemView';
 
@@ -22,13 +23,13 @@ const Container = styled.ul`
 `;
 
 interface Props {
-    equipments: EquipmentList;
+    equipments: (typeof EquipmentItem['Type'])[];
 }
 
 export default observer(function EquipmentList(props: Props) {
     return (
         <Container>
-            {props.equipments.equipments.map((equipment, idx) => (
+            {props.equipments.map((equipment, idx) => (
                 <EquipmentItemView key={idx} equipment={equipment} />
             ))}
         </Container>

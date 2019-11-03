@@ -28,7 +28,7 @@ const EquipmentName = styled.div`
 `;
 
 interface Props {
-    equipment: EquipmentItem;
+    equipment: typeof EquipmentItem['Type'];
 }
 
 export default observer(function EquipmentItemView(props: Props) {
@@ -42,11 +42,11 @@ export default observer(function EquipmentItemView(props: Props) {
             />
             <EquipmentDetail>
                 <EquipmentName>{equipment.name}</EquipmentName>
-                {equipment.maxEnhanceLevel > 0 && (
+                {equipment.inner != null && equipment.maxEnhanceLevel > 0 && (
                     <Stars
-                        value={equipment.enhanceLevel}
+                        value={equipment.inner.enhanceLevel}
                         max={equipment.maxEnhanceLevel}
-                        onChange={equipment.updateEnhanceLevel}
+                        onChange={equipment.setEnhanceLevel}
                     />
                 )}
             </EquipmentDetail>

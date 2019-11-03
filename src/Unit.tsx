@@ -30,14 +30,14 @@ const UnitDetail = styled.form`
 `;
 
 interface Props {
-    unit: UnitItem;
+    unit: typeof UnitItem['Type'];
 }
 
 export default observer(function Unit(props: Props) {
     const { unit } = props;
-    const [rarityDraft, setRarityDraft] = React.useState(1);
-    const [rankDraft, setRankDraft] = React.useState('1');
-    const [levelDraft, setLevelDraft] = React.useState('1');
+    const [rarityDraft, setRarityDraft] = React.useState(() => unit.rarity);
+    const [rankDraft, setRankDraft] = React.useState(() => String(unit.rank));
+    const [levelDraft, setLevelDraft] = React.useState(() => String(unit.level));
     const isDraft = unit.rarity !== rarityDraft || String(unit.rank) !== rankDraft || String(unit.level) !== levelDraft;
 
     React.useEffect(() => {
@@ -63,7 +63,7 @@ export default observer(function Unit(props: Props) {
         const rarity = rarityDraft;
         const rank = Number(rankDraft);
         const level = Number(levelDraft);
-        unit.updateOptions({ rarity, rank, level });
+        unit.setOptions({ rarity, rank, level });
     }, [unit, rarityDraft, rankDraft, levelDraft]);
 
     const handleRankChange = React.useCallback(e => {
@@ -86,8 +86,12 @@ export default observer(function Unit(props: Props) {
                     <input type="submit" disabled={unit.loading || !isDraft} value={unit.loading ? '로드 중' : '적용'} />
                 </UnitDetail>
             </UnitData>
-            <EquipmentList equipments={unit.equipments} />
-            <EquipmentControl equipments={unit.equipments} />
+            {unit.detail != null && (
+                <>
+                    <EquipmentList equipments={unit.detail.equipments} />
+                    <EquipmentControl unitDetail={unit.detail} />
+                </>
+            )}
         </UnitContainer>
     );
 });

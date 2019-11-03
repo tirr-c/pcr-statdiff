@@ -3,7 +3,7 @@ import React from 'react';
 
 import { observer } from 'mobx-react';
 
-import { State } from './state';
+import { UnitStore } from './state';
 import UnitStatItem from './UnitStatItem';
 
 const NameForm = styled.form`
@@ -11,7 +11,7 @@ const NameForm = styled.form`
 `;
 
 interface Props {
-    state: State;
+    state: typeof UnitStore['Type'];
 }
 
 export default observer(function App(props: Props) {

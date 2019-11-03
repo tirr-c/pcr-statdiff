@@ -2,7 +2,7 @@ import styled from 'astroturf';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { State } from './state';
+import { UnitStore } from './state';
 import ApolloClientTransport from './transport/ApolloClientTransport';
 
 import App from './App';
@@ -18,10 +18,14 @@ const Footer = styled.footer`
     word-break: keep-all;
 `;
 
+const store = UnitStore.create(
+    {},
+    { transport },
+);
 ReactDOM.render(
     <>
         <h1>{TITLE}</h1>
-        <App state={new State(transport)} />
+        <App state={store} />
         <Footer>
             <p>
                 버전 <code>{VERSION}</code>, 소스 코드는 MIT 라이선스로 <a href={REPOSITORY_URL}>배포되고 있습니다</a>.

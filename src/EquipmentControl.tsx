@@ -3,25 +3,25 @@ import React from 'react';
 
 import { observer } from 'mobx-react';
 
-import { EquipmentList } from './state';
+import { UnitDetail } from './state';
 
 const Container = styled.div`
     margin-top: 8px;
 `;
 
 interface Props {
-    equipments: EquipmentList;
+    unitDetail: typeof UnitDetail['Type'];
 }
 
 export default observer(function EquipmentControl(props: Props) {
-    const { equipments } = props;
+    const { unitDetail } = props;
     return (
         <Container>
-            <button type="button" onClick={equipments.toggleEquipState}>
-                {equipments.isAllEquipped ? '모두 장비 해제' : '모두 장비'}
+            <button type="button" onClick={unitDetail.toggleEquipped}>
+                {unitDetail.isAllEquipped ? '모두 장비 해제' : '모두 장비'}
             </button>
-            <button type="button" onClick={equipments.toggleEnhanceState}>
-                {equipments.isAllEnhanced ? '모두 노강' : '모두 풀강'}
+            <button type="button" onClick={unitDetail.toggleEnhanceState}>
+                {unitDetail.isAllEnhanced ? '모두 노강' : '모두 풀강'}
             </button>
         </Container>
     );

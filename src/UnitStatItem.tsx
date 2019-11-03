@@ -39,7 +39,7 @@ const StatContainer = styled.div`
 `;
 
 interface Props {
-    unit: UnitItem;
+    unit: typeof UnitItem['Type'];
 }
 
 export default observer(function UnitStatItem(props: Props) {
