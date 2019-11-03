@@ -6,6 +6,7 @@ import { observer } from 'mobx-react';
 import { EquipmentList } from './state';
 
 const Container = styled.div`
+    margin-top: 8px;
 `;
 
 interface Props {

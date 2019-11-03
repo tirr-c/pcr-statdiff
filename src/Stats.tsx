@@ -32,6 +32,7 @@ const StatsContainer = styled.div`
     grid-template-columns: repeat(2, 3fr 2fr);
     grid-gap: 8px;
     grid-auto-rows: min-content;
+    margin-bottom: 12px;
 
     @media (max-width: 516px) {
         grid-template-columns: 3fr 2fr;
