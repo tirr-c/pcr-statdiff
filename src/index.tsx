@@ -2,6 +2,8 @@ import styled from 'astroturf';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import { applySnapshot, onSnapshot } from 'mobx-state-tree';
+
 import { UnitStore } from './state';
 import ApolloClientTransport from './transport/ApolloClientTransport';
 
@@ -22,6 +24,19 @@ const store = UnitStore.create(
     {},
     { transport },
 );
+const snapshot = localStorage.getItem('snapshot');
+if (snapshot != null) {
+    try {
+        applySnapshot(store, JSON.parse(snapshot));
+    } catch (err) {
+        console.error(err);
+        localStorage.removeItem('snapshot');
+    }
+}
+onSnapshot(store, snapshot => {
+    localStorage.setItem('snapshot', JSON.stringify(snapshot));
+});
+
 ReactDOM.render(
     <>
         <h1>{TITLE}</h1>
