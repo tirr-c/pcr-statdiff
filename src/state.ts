@@ -147,7 +147,9 @@ export const UnitDetail = types.model('UnitDetail', {
     toggleEnhanceState() {
         const newEnhanceLevel = self.isAllEnhanced ? 0 : Infinity;
         for (const equipment of self.equipments) {
-            equipment.setEnhanceLevel(newEnhanceLevel);
+            if (equipment.inner && equipment.inner.equipped) {
+                equipment.setEnhanceLevel(newEnhanceLevel);
+            }
         }
     },
 }));
