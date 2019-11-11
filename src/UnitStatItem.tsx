@@ -1,27 +1,13 @@
 import styled from 'astroturf';
 import React from 'react';
 
-import { autorun } from 'mobx';
 import { observer } from 'mobx-react';
+import { Instance } from 'mobx-state-tree';
 
-import { useQuery } from '@apollo/react-hooks';
-
-import { CharacterUnit, Stat } from './common-types';
 import { UnitItem } from './state';
-import { statCombineLinear, calculateFinalStat } from './utils';
 
 import Stats from './Stats';
 import Unit from './Unit';
-
-interface CharacterStatVariables {
-    name: string;
-    rarity: number;
-    rank: number;
-}
-
-type CharacterStatResult = {
-    unit: CharacterUnit;
-};
 
 const UnitStatItemContainer = styled.div`
     display: flex;
@@ -39,7 +25,7 @@ const StatContainer = styled.div`
 `;
 
 interface Props {
-    unit: typeof UnitItem['Type'];
+    unit: Instance<typeof UnitItem>;
 }
 
 export default observer(function UnitStatItem(props: Props) {

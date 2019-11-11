@@ -1,7 +1,5 @@
 import { reaction } from 'mobx';
-import { flow, getEnv, types } from 'mobx-state-tree';
-
-import ApolloClient from 'apollo-boost';
+import { flow, getEnv, getParent, types, Instance } from 'mobx-state-tree';
 
 import { BasicCharacterInfo, Equipment, PromotionLevel, Stat } from './common-types';
 import Transport from './transport';
@@ -128,7 +126,7 @@ export const UnitDetail = types.model('UnitDetail', {
                 return targetData != null && equipment.id === targetData.data.id;
             })
         ) {
-            const equipmentList: typeof EquipmentItem['Type'][] = equipments.map(equipment => (
+            const equipmentList: Instance<typeof EquipmentItem>[] = equipments.map(equipment => (
                 EquipmentItem.create({
                     inner: equipment && EquipmentItemInner.create({
                         data: equipment,
@@ -235,7 +233,10 @@ export const UnitItem = types.model('UnitItem', {
         if (level != null) {
             self.level = Math.max(1, level);
         }
-    }
+    },
+    remove() {
+        getParent<typeof UnitStore>(self, 2).removeUnit(self as Instance<typeof UnitItem>);
+    },
 }))
 .actions(self => {
     let dispose: () => void;
@@ -278,5 +279,8 @@ export const UnitStore = types.model('UnitStore', {
             self.units.push(unit);
             yield unit.fetch();
         }),
+        removeUnit(unit: Instance<typeof UnitItem>) {
+            self.units.splice(self.units.indexOf(unit), 1);
+        },
     };
 });

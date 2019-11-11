@@ -3,9 +3,9 @@ import React from 'react';
 
 import { reaction } from 'mobx';
 import { observer } from 'mobx-react';
+import { Instance } from 'mobx-state-tree';
 
-import { CharacterUnit, Equipment, PromotionLevel } from './common-types';
-import { EquipmentItem, UnitItem } from './state';
+import { UnitItem } from './state';
 
 import EquipmentControl from './EquipmentControl';
 import EquipmentList from './EquipmentList';
@@ -30,7 +30,7 @@ const UnitDetail = styled.form`
 `;
 
 interface Props {
-    unit: typeof UnitItem['Type'];
+    unit: Instance<typeof UnitItem>;
 }
 
 export default observer(function Unit(props: Props) {
@@ -81,8 +81,8 @@ export default observer(function Unit(props: Props) {
                 <UnitDetail onSubmit={handleRequery}>
                     <div>{unit.basicInfo.name}</div>
                     <Stars value={rarityDraft} max={5} onChange={setRarityDraft} />
-                    <div>RANK <input type="number" min={1} value={rankDraft} onChange={handleRankChange} /></div>
-                    <div>레벨 <input type="number" min={1} value={levelDraft} onChange={handleLevelChange} /></div>
+                    <div>RANK <input type="number" maxLength={2} min={1} value={rankDraft} onChange={handleRankChange} /></div>
+                    <div>레벨 <input type="number" maxLength={3} min={1} value={levelDraft} onChange={handleLevelChange} /></div>
                     <input type="submit" disabled={unit.loading || !isDraft} value={unit.loading ? '로드 중' : '적용'} />
                 </UnitDetail>
             </UnitData>
