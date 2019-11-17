@@ -17,16 +17,41 @@ const UnitContainer = styled.div`
 `;
 
 const UnitData = styled.div`
-    display: flex;
     margin-bottom: 12px;
+`;
+
+const UnitTitle = styled.div`
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+
     > img {
         width: 96px;
         height: 96px;
     }
 `;
 
-const UnitDetail = styled.form`
+const Spacer = styled.div`
+    flex: 1;
+`;
+
+const UnitName = styled.div`
     margin-left: 8px;
+    > * + * {
+        margin-top: 4px;
+    }
+`;
+
+const UnitDetail = styled.form`
+    display: block;
+`;
+
+const UnitParams = styled.div`
+    display: flex;
+
+    & input[type="number"] {
+        width: 50px;
+    }
 `;
 
 interface Props {
@@ -77,13 +102,21 @@ export default observer(function Unit(props: Props) {
     return (
         <UnitContainer>
             <UnitData>
-                <img key={unit.iconId} src={unit.iconUrl} />
                 <UnitDetail onSubmit={handleRequery}>
-                    <div>{unit.basicInfo.name}</div>
-                    <Stars value={rarityDraft} max={5} onChange={setRarityDraft} />
-                    <div>RANK <input type="number" maxLength={2} min={1} value={rankDraft} onChange={handleRankChange} /></div>
-                    <div>레벨 <input type="number" maxLength={3} min={1} value={levelDraft} onChange={handleLevelChange} /></div>
-                    <input type="submit" disabled={unit.loading || !isDraft} value={unit.loading ? '로드 중' : '적용'} />
+                    <UnitTitle>
+                        <img key={unit.iconId} src={unit.iconUrl} />
+                        <UnitName>
+                            <strong>{unit.basicInfo.name}</strong>
+                            <Stars value={rarityDraft} max={5} onChange={setRarityDraft} />
+                        </UnitName>
+                        <Spacer />
+                        <button type="button" onClick={unit.remove}>삭제</button>
+                    </UnitTitle>
+                    <UnitParams>
+                        <div>RANK <input type="number" maxLength={2} min={1} value={rankDraft} onChange={handleRankChange} /></div>
+                        <div>레벨 <input type="number" maxLength={3} min={1} value={levelDraft} onChange={handleLevelChange} /></div>
+                        <input type="submit" disabled={unit.loading || !isDraft} value={unit.loading ? '로드 중' : '적용'} />
+                    </UnitParams>
                 </UnitDetail>
             </UnitData>
             {unit.detail != null && (

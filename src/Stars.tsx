@@ -11,24 +11,28 @@ const StarsContainer = styled.div`
 `;
 
 const AdjustButton = styled.button`
-    width: 24px;
-    height: 24px;
+    width: 36px;
+    height: 36px;
     border: 1px solid black;
+    line-height: 34px;
+    text-align: center;
     background-color: white;
     color: black;
 `;
 
 const StarList = styled.span`
+    margin: 0 8px;
 `;
 
 interface Props {
     value: number;
     max: number;
+    disabled?: boolean;
     onChange?(value: number): void;
 }
 
 export default function Stars(props: Props) {
-    const { value, max, onChange } = props;
+    const { value, max, disabled, onChange } = props;
     const handleDecrease = React.useCallback(() => {
         if (onChange == null) {
             return;
@@ -50,9 +54,9 @@ export default function Stars(props: Props) {
 
     return (
         <StarsContainer>
-            <AdjustButton type="button" onClick={handleDecrease}>-</AdjustButton>
+            <AdjustButton type="button" disabled={disabled} onClick={handleDecrease}>-</AdjustButton>
             <StarList>{'★'.repeat(value)}{'☆'.repeat(max - value)}</StarList>
-            <AdjustButton type="button" onClick={handleIncrease}>+</AdjustButton>
+            <AdjustButton type="button" disabled={disabled} onClick={handleIncrease}>+</AdjustButton>
         </StarsContainer>
     );
 }

@@ -32,7 +32,7 @@ export default observer(function App(props: Props) {
                 <input placeholder="추가할 캐릭터 이름" value={name} onChange={handleNameChange} />
                 <input type="submit" value="추가" />
             </NameForm>
-            {props.state.units.map((unit, idx) => <UnitStatItem key={idx} unit={unit} />)}
+            {props.state.units.map(unit => <UnitStatItem key={unit.id} unit={unit} />)}
         </>
     );
 });
