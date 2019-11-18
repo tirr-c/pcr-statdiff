@@ -96,6 +96,7 @@ export const UnitDetail = types.model('UnitDetail', {
     get isAllEnhanced(): boolean {
         return self.equipments.every(equipment => (
             equipment.inner == null ||
+            !equipment.inner.equipped ||
             equipment.inner.enhanceLevel === equipment.maxEnhanceLevel
         ));
     },
@@ -260,27 +261,25 @@ export const UnitItem = types.model('UnitItem', {
 
 export const UnitStore = types.model('UnitStore', {
     units: types.optional(types.array(UnitItem), []),
+    counter: 0,
 })
-.actions(self => {
-    let counter = 0;
-    return {
-        addUnit: flow(function* (name: string) {
-            const { transport } = getEnv<Env>(self);
-            const basicInfo = yield transport.getBasicCharacterInfo(name);
-            if (basicInfo == null) {
-                return;
-            }
+.actions(self => ({
+    addUnit: flow(function* (name: string) {
+        const { transport } = getEnv<Env>(self);
+        const basicInfo = yield transport.getBasicCharacterInfo(name);
+        if (basicInfo == null) {
+            return;
+        }
 
-            const unit = UnitItem.create({
-                id: counter++,
-                basicInfo,
-                rarity: basicInfo.rarity,
-            });
-            self.units.push(unit);
-            yield unit.fetch();
-        }),
-        removeUnit(unit: Instance<typeof UnitItem>) {
-            self.units.splice(self.units.indexOf(unit), 1);
-        },
-    };
-});
+        const unit = UnitItem.create({
+            id: self.counter++,
+            basicInfo,
+            rarity: basicInfo.rarity,
+        });
+        self.units.push(unit);
+        yield unit.fetch();
+    }),
+    removeUnit(unit: Instance<typeof UnitItem>) {
+        self.units.splice(self.units.indexOf(unit), 1);
+    },
+}));
