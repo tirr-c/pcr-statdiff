@@ -276,7 +276,7 @@ export const UnitStore = types.model('UnitStore', {
             basicInfo,
             rarity: basicInfo.rarity,
         });
-        self.units.push(unit);
+        self.units.unshift(unit);
         yield unit.fetch();
     }),
     removeUnit(unit: Instance<typeof UnitItem>) {
