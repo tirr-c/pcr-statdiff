@@ -2,16 +2,15 @@ import styled from 'astroturf';
 import React from 'react';
 
 import { observer } from 'mobx-react';
+import { Instance } from 'mobx-state-tree';
 
-import { PromotionLevel } from './common-types';
 import { EquipmentItem } from './state';
 
 import Stars from './Stars';
 
 const Container = styled.li`
     display: flex;
-    align-items: center;
-    list-style: none;
+    align-items: stretch;
 
     > img {
         width: 64px;
@@ -21,6 +20,9 @@ const Container = styled.li`
 
 const EquipmentDetail = styled.div`
     margin-left: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 `;
 
 const EquipmentName = styled.div`
@@ -28,7 +30,7 @@ const EquipmentName = styled.div`
 `;
 
 interface Props {
-    equipment: typeof EquipmentItem['Type'];
+    equipment: Instance<typeof EquipmentItem>;
 }
 
 export default observer(function EquipmentItemView(props: Props) {

@@ -2,7 +2,7 @@ import styled from 'astroturf';
 import React from 'react';
 
 import { observer } from 'mobx-react';
-import { types } from 'mobx-state-tree';
+import { Instance } from 'mobx-state-tree';
 
 import { EquipmentItem } from './state';
 
@@ -23,7 +23,7 @@ const Container = styled.ul`
 `;
 
 interface Props {
-    equipments: (typeof EquipmentItem['Type'])[];
+    equipments: Instance<typeof EquipmentItem>[];
 }
 
 export default observer(function EquipmentList(props: Props) {
